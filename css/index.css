@@ -1,0 +1,35 @@
+.vh{
+	height: calc(100vh - 10px);
+}
+iframe{
+	width: 100%;
+	height: 100%;
+	border: none;
+}
+.my-a-list{
+}
+.ui-class-list{
+	list-style-type:none;
+	counter-reset:sectioncounter;
+}
+ul.ui-class-list li:nth-child(1) {
+	cursor:pointer;
+	border-top: 1px solid #dedede;
+}
+ul.ui-class-list li {
+	cursor:pointer;
+	border-left: 1px solid #dedede;
+	border-right: 1px solid #dedede;
+	border-bottom: 1px solid #dedede;
+	padding: 15px 10px 15px 20px;
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+}
+ul.ui-class-list li:before {
+   content:counter(sectioncounter) "."; 
+   counter-increment:sectioncounter;
+}
+ul.ui-class-list li:hover {
+   background-color: #1E9FFF;
+}
