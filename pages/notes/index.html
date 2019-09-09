@@ -40,58 +40,67 @@
         element.on('collapse(test)', function (data) {
             // layer.msg('展开状态：'+ data.show);
         });
-    });
 
-    new Vue({
-        el: '#app',
-        data: {
-            list: [],
-            noteUrl: '',
-            title: ''
-        },
-        mounted() {
-            getRequest('/json/dir.json').then(res => {
-                this.list = res;
-                const params = window.location.href.split('#')[1];
-                if (params) {
-                    this.noteUrl = decodeURI(params.split('&')[0])
-                    this.title = this.noteUrl.substring(2, this.noteUrl.length - 5)
-                } else {
-                    this.noteUrl = res[0].child[0].url
-                    this.title = this.noteUrl.substring(2, this.noteUrl.length - 5)
-                }
-
-                this.setIframeHeight()
-            }).catch(err => {
-                console.log(err);
-            })
-        },
-        methods: {
-            showNote({name, url}) {
-                this.noteUrl = url
-                this.title = name
-                let href = window.location.href
-                href = href.substring(0, href.indexOf("#"))
-                window.location.href = href + '#' + encodeURI(url)
-                // window.location.reload()
-                let iframeObj = document.getElementById('iframe');
-                iframeObj.contentWindow.location.reload(true);
+        new Vue({
+            el: '#app',
+            data: {
+                list: [],
+                noteUrl: '',
+                title: ''
             },
-            setIframeHeight() {
-                //设置iframe的高度
-                let iframeObj = document.getElementById('iframe');
-                iframeObj.onload = iframeObj.onreadystatechange = function () {
-                    if (this.readyState && this.readyState != 'complete') return;
-                    else {
-                        setTimeout(function () {
-                            if (!iframeObj) return;
-                            iframeObj.height = (iframeObj.Document ? iframeObj.Document.body.scrollHeight : iframeObj.contentDocument.body.offsetHeight);
-                        }, 200)
+            mounted() {
+                this.layIndex = layer.load(2)
+
+
+                getRequest('/json/dir.json').then(res => {
+                    this.list = res;
+                    const params = window.location.href.split('#')[1];
+                    if (params) {
+                        this.noteUrl = decodeURI(params.split('&')[0])
+                        this.title = this.noteUrl.substring(2, this.noteUrl.length - 5)
+                    } else {
+                        this.noteUrl = res[0].child[0].url
+                        this.title = this.noteUrl.substring(2, this.noteUrl.length - 5)
+                    }
+
+                    this.setIframeHeight()
+                }).catch(err => {
+                    console.log(err);
+                })
+            },
+            methods: {
+                showNote({name, url}) {
+                    this.noteUrl = url
+                    this.title = name
+                    let href = window.location.href
+                    href = href.substring(0, href.indexOf("#"))
+                    window.location.href = href + '#' + encodeURI(url)
+                    // window.location.reload()
+                    let iframeObj = document.getElementById('iframe');
+                    iframeObj.contentWindow.location.reload(true);
+                    this.layIndex = layer.load(2)
+                },
+                setIframeHeight() {
+                    const _this = this
+                    //设置iframe的高度
+                    let iframeObj = document.getElementById('iframe');
+                    iframeObj.onload = iframeObj.onreadystatechange = function () {
+                        if (this.readyState && this.readyState != 'complete') return;
+                        else {
+
+                            setTimeout(function () {
+                                layer.close(_this.layIndex);
+                                if (!iframeObj) return;
+                                iframeObj.height = (iframeObj.Document ? iframeObj.Document.body.scrollHeight : iframeObj.contentDocument.body.offsetHeight);
+                            }, 200)
+                        }
                     }
                 }
             }
-        }
-    })
+        })
+    });
+
+
 </script>
 </body>
 </html>
