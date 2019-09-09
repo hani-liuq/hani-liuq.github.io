@@ -3,20 +3,20 @@
 		"name":"flutter",
 		"child":[
 			{
-				"name":"flutter安装(一)",
-				"url":"./flutter.html"
+				"name":"flutter安装",
+				"url":"./flutter安装.html"
 			},
 			{
 				"name":"flutter中Container的作用",
-				"url":"./flutter-container.html"
+				"url":"./flutter中Container的作用.html"
 			},
 			{
 				"name":"flutter中Scaffold的作用",
-				"url":"flutter中Scaffold的作用.html"
+				"url":"./flutter中Scaffold的作用.html"
 			},
 			{
-				"name":"设置沉浸式状态栏.html",
-				"url":"设置沉浸式状态栏.html"
+				"name":"设置沉浸式状态栏",
+				"url":"./设置沉浸式状态栏.html"
 			}
 		]
 	}

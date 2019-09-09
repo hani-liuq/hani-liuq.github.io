@@ -1,87 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>我的笔记</title>
-	<link rel="stylesheet" type="text/css" href="../../plugins/layui/css/layui.css">
-	<link rel="stylesheet" type="text/css" href="../../css/index.css">
+    <title>我的笔记</title>
+    <meta http-equiv=Content-Type content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="../../plugins/layui/css/layui.css">
+    <link rel="stylesheet" type="text/css" href="../../css/index.css">
 </head>
 <body>
-<div class="layui-container vh" id="app" >
-  <div class="layui-row layui-col-space25 vh" style="margin-top: 20px;">
-    <div class="layui-col-xs6 layui-col-sm6 layui-col-md9 vh">
-    	<h1 v-text="title"></h1>
-      <iframe :src="noteUrl" id="iframe"></iframe>
+<div class="layui-container vh" id="app">
+    <div class="layui-row layui-col-space25 vh" style="margin-top: 20px;">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md9 vh">
+            <h1 v-text="title"></h1>
+            <iframe :src="noteUrl" id="iframe"></iframe>
+        </div>
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md3">
+            <div class="layui-collapse" lay-accordion="" lay-filter="test">
+                <div class="layui-colla-item" v-for="(item,idx) in list" :key="idx">
+                    <h2 class="layui-colla-title" v-text="item.name"></h2>
+                    <div class="layui-colla-content layui-show">
+                        <ul class="ui-class-list">
+                            <li v-for="(c,i) in item.child" :class="c.name==title?'active':''" :key="i" v-text="c.name"
+                                @click="showNote(c)"></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="layui-col-xs6 layui-col-sm6 layui-col-md3">
-    	<div class="layui-collapse" lay-accordion=""  lay-filter="test">
-		  <div class="layui-colla-item" v-for="(item,idx) in list" :key="idx">
-		    <h2 class="layui-colla-title" v-text="item.name"></h2>
-		    <div class="layui-colla-content layui-show">
-		    	<ul class="ui-class-list">
-				  <li v-for="(c,i) in item.child" :class="c.name==title?'active':''" :key="i" v-text="c.name" @click="showNote(c)"></li>
-				</ul>
-		    </div>
-		  </div>
-		</div>
-    </div>
-  </div>
 </div>
-
 
 
 <script type="text/javascript" id="mainJS" root="../../" src="../../js/main.js"></script>
 <script>
-layui.use(['element', 'layer'], function(){
-  var element = layui.element;
-  var layer = layui.layer;
-  
-  //监听折叠
-  element.on('collapse(test)', function(data){
-    // layer.msg('展开状态：'+ data.show);
-  });
-});
+    layui.use(['element', 'layer'], function () {
+        const element = layui.element;
+        const layer = layui.layer;
 
-new Vue({
-  el: '#app',
-  data: {
-    list:[],
-    noteUrl:'',
-    title:''
-  },
-  mounted(){
-  	getRequest('/json/dir.json').then(res=>{
-  		this.list = res;
-  		var params = window.location.href.split('#')[1];
-	  	if(params){
-			this.noteUrl = decodeURI(params.split('&')[0])
-			this.title = decodeURI(params.split('&')[1])
-	  	}else{
-	  		this.noteUrl = res[0].child[0].url
-	  		this.title = res[0].child[0].name
-	  	}
+        //监听折叠
+        element.on('collapse(test)', function (data) {
+            // layer.msg('展开状态：'+ data.show);
+        });
+    });
 
-	  			//设置iframe的高度
-	  	let iframeObj = document.getElementById('iframe');
+    new Vue({
+        el: '#app',
+        data: {
+            list: [],
+            noteUrl: '',
+            title: ''
+        },
+        mounted() {
+            getRequest('/json/dir.json').then(res => {
+                this.list = res;
+                const params = window.location.href.split('#')[1];
+                if (params) {
+                    this.noteUrl = decodeURI(params.split('&')[0])
+                    this.title = this.noteUrl.substring(2, this.noteUrl.length - 5)
+                } else {
+                    this.noteUrl = res[0].child[0].url
+                    this.title = this.noteUrl.substring(2, this.noteUrl.length - 5)
+                }
 
-		iframeObj.onload = iframeObj.onreadystatechange = function() {
-			if (this.readyState && this.readyState != 'complete') return;
-			else {
-		  	setTimeout(function(){if(!iframeObj) return;iframeObj.height=(iframeObj.Document?iframeObj.Document.body.scrollHeight:iframeObj.contentDocument.body.offsetHeight);},200)
-			}
-		}
-  	}).catch(err=>{
-  		console.log(err);
-  	})
-  },
-  methods:{
-  	showNote({name,url}){
-  		let href = window.location.href
-  		href = href.substring(0,href.indexOf("#"))
-  		window.location.href = href +'#'+encodeURI(url)+'&'+encodeURI(name)
-  		window.location.reload()
-  	}
-  }
-})
+                this.setIframeHeight()
+            }).catch(err => {
+                console.log(err);
+            })
+        },
+        methods: {
+            showNote({name, url}) {
+                this.noteUrl = url
+                this.title = name
+                let href = window.location.href
+                href = href.substring(0, href.indexOf("#"))
+                window.location.href = href + '#' + encodeURI(url)
+                // window.location.reload()
+                let iframeObj = document.getElementById('iframe');
+                iframeObj.contentWindow.location.reload(true);
+            },
+            setIframeHeight() {
+                //设置iframe的高度
+                let iframeObj = document.getElementById('iframe');
+                iframeObj.onload = iframeObj.onreadystatechange = function () {
+                    if (this.readyState && this.readyState != 'complete') return;
+                    else {
+                        setTimeout(function () {
+                            if (!iframeObj) return;
+                            iframeObj.height = (iframeObj.Document ? iframeObj.Document.body.scrollHeight : iframeObj.contentDocument.body.offsetHeight);
+                        }, 200)
+                    }
+                }
+            }
+        }
+    })
 </script>
 </body>
 </html>
