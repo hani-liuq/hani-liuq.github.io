@@ -19,5 +19,14 @@
 				"url":"./设置沉浸式状态栏.html"
 			}
 		]
+	},
+	{
+		"name":"其他",
+		"child":[
+			{
+				"name":"WIN10企业版 LTSC激活",
+				"url":"./WIN10企业版 LTSC激活.html,"
+			}
+		]
 	}
 ]
