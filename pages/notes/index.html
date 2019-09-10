@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="../../plugins/layui/css/layui.css">
     <link rel="stylesheet" type="text/css" href="../../css/index.css">
 </head>
-<body>
+<body onload="InitLive2D()">
 <div class="layui-container vh" id="app">
     <div class="layui-row layui-col-space25 vh" style="margin-top: 20px;">
         <div class="layui-col-xs6 layui-col-sm6 layui-col-md9 vh">
@@ -29,29 +29,139 @@
     </div>
 </div>
 
+<div style="position: fixed;left: 0;bottom: 50px;">
+    <div style="position: fixed;left: 0;bottom: 350px;">
+        <button onclick="test()" class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal">小埋我要走了</button>
+        <button onclick="color()" class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal">小埋你的可乐呢</button>
+        <button onclick="colorAndCrisps()" class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal">还有薯片</button>
+    </div>
+    <canvas id="mycanvas" width="250" height="400"
+            style="border:dashed 0px #CCC;">
+    </canvas>
+    <audio id="my_audio"></audio>
+</div>
+
+
+<!-- Live2D Library -->
+<script src="../../plugins/live2D/js/live2d.min.js"></script>
+<script>
+    var LAppDefine = {
+        // 调试，true时会在console里显示日志
+        DEBUG_LOG : true,
+        DEBUG_MOUSE_LOG : false, // 鼠标相关日志
+        //  全部设定
+        //这里配置canvsa元素的id
+        CANVAS_ID : "mycanvas",
+        //是否开启滚轮缩放，默认true
+        IS_SCROLL_SCALE : true,
+        // 画面最大缩放级别
+        VIEW_MAX_SCALE : 2,
+        // 画面最小缩放级别
+        VIEW_MIN_SCALE : 0.8,
+
+        VIEW_LOGICAL_LEFT : -1,
+        VIEW_LOGICAL_RIGHT : 1,
+
+        VIEW_LOGICAL_MAX_LEFT : -2,
+        VIEW_LOGICAL_MAX_RIGHT : 2,
+        VIEW_LOGICAL_MAX_BOTTOM : -2,
+        VIEW_LOGICAL_MAX_TOP : 2,
+
+        // 动作优先级常量
+        PRIORITY_NONE : 0,
+        PRIORITY_IDLE : 1,
+        PRIORITY_NORMAL : 2,
+        PRIORITY_FORCE : 3,
+
+        //是否绑定切换模型按钮
+        IS_BIND_BUTTON : false,
+        //绑定按钮元素id
+        BUTTON_ID : "Change",
+        //是否开启模型切换完成之前禁止按钮点击的选项，默认为true
+        IS_BAN_BUTTON : true,
+        //设置按钮禁止状态时的class，可自定义样式，前提是IS_BAN_BUTTON为true
+        BAN_BUTTON_CLASS : "inactive",
+        //设置按钮正常状态时的class
+        NORMAL_BUTTON_CLASS : "active",
+        //衣服切换模式 目前只支持两种 sequence-顺序 random-随机
+        //需事先配置好json文件里的textures属性
+        //暂不支持保存功能
+        TEXURE_CHANGE_MODE : "sequence",
+        IS_START_TEXURE_CHANGE : false,
+        TEXURE_BUTTON_ID : "",
+        /**
+         *  模型定义
+         自定义配置模型，同一数组内放置两个模型则为开启双模型
+         三模型也只取数组里的前两个
+         模型出现的顺序与数组一致
+         这里请用相对路径配置
+         */
+        MODELS:
+            [
+                ["../../plugins/live2D/model/xiaomai/xiaomai.model.json"]
+            ],
+
+        // 与外部定义的json文件匹配
+        MOTION_GROUP_IDLE : "idle", // 空闲时
+        MOTION_GROUP_TAP_BODY : "tap_body", // 点击身体时
+        MOTION_GROUP_FLICK_HEAD : "flick_head", // 抚摸头部
+        MOTION_GROUP_PINCH_IN : "pinch_in", // 放大时
+        MOTION_GROUP_PINCH_OUT : "pinch_out", // 缩小时
+        MOTION_GROUP_SHAKE : "shake", // 摇晃
+        //如果有自定义的动作分组可以放在这里
+
+        // 与外部定义json文件相匹配
+        HIT_AREA_HEAD : "head",
+        HIT_AREA_BODY : "body",
+
+        //初始化的模型大小
+        SCALE : 1.0,
+        //新增属性，是否播放音频 默认为true
+        IS_PLAY_AUDIO : true,
+        //新增属性，audio标签id值
+        AUDIO_ID : "my_audio"
+    };
+    function test() {
+        var model = new LAppModel();
+        model.startAppointMotion("start",3,10);
+    }
+
+    function color() {
+        var model = new LAppModel();
+        model.startAppointMotion("start",3,3)
+    }
+
+    function colorAndCrisps() {
+        var model = new LAppModel();
+        model.startAppointMotion("start",3,6)
+    }
+
+    function changeTexure() {
+        var model = new LAppModel();
+        model.changeTexure(1);
+    }
+</script>
 
 <script type="text/javascript" id="mainJS" root="../../" src="../../js/main.js"></script>
+
+
 <script>
-    layui.use(['element', 'layer'], function () {
-        const element = layui.element;
-        const layer = layui.layer;
-
-        //监听折叠
-        element.on('collapse(test)', function (data) {
-            // layer.msg('展开状态：'+ data.show);
-        });
-
-        new Vue({
-            el: '#app',
-            data: {
-                list: [],
-                noteUrl: '',
-                title: ''
-            },
-            mounted() {
-                this.layIndex = layer.load(2)
-
-
+    new Vue({
+        el: '#app',
+        data: {
+            list: [],
+            noteUrl: '',
+            title: ''
+        },
+        mounted() {
+            const _this = this
+            new Promise((r,e)=>{
+                layui.use(['layer'], function () {
+                    _this.layer = layui.layer;
+                    _this.layIdx = _this.layer.load(2)
+                    r()
+                });
+            }).then(()=>{
                 getRequest('/json/dir.json').then(res => {
                     this.list = res;
                     const params = window.location.href.split('#')[1];
@@ -62,44 +172,43 @@
                         this.noteUrl = res[0].child[0].url
                         this.title = this.noteUrl.substring(2, this.noteUrl.length - 5)
                     }
-
+                    layui.use(['element']);
                     this.setIframeHeight()
                 }).catch(err => {
                     console.log(err);
                 })
+            })
+        },
+        methods: {
+            showNote({name, url}) {
+                this.noteUrl = url
+                this.title = name
+                let href = window.location.href
+                href = href.substring(0, href.indexOf("#"))
+                window.location.href = href + '#' + encodeURI(url)
+                // window.location.reload()
+                let iframeObj = document.getElementById('iframe');
+                iframeObj.contentWindow.location.reload(true);
+                this.layIdx = this.layer.load(2)
             },
-            methods: {
-                showNote({name, url}) {
-                    this.noteUrl = url
-                    this.title = name
-                    let href = window.location.href
-                    href = href.substring(0, href.indexOf("#"))
-                    window.location.href = href + '#' + encodeURI(url)
-                    // window.location.reload()
-                    let iframeObj = document.getElementById('iframe');
-                    iframeObj.contentWindow.location.reload(true);
-                    this.layIndex = layer.load(2)
-                },
-                setIframeHeight() {
-                    const _this = this
-                    //设置iframe的高度
-                    let iframeObj = document.getElementById('iframe');
-                    iframeObj.onload = iframeObj.onreadystatechange = function () {
-                        if (this.readyState && this.readyState != 'complete') return;
-                        else {
+            setIframeHeight() {
+                const _this = this
+                //设置iframe的高度
+                let iframeObj = document.getElementById('iframe');
+                iframeObj.onload = iframeObj.onreadystatechange = function () {
+                    if (this.readyState && this.readyState != 'complete') return;
+                    else {
 
-                            setTimeout(function () {
-                                layer.close(_this.layIndex);
-                                if (!iframeObj) return;
-                                iframeObj.height = (iframeObj.Document ? iframeObj.Document.body.scrollHeight : iframeObj.contentDocument.body.offsetHeight);
-                            }, 200)
-                        }
+                        setTimeout(function () {
+                            if (!iframeObj) return;
+                            _this.layer.close(_this.layIdx);
+                            iframeObj.height = (iframeObj.Document ? iframeObj.Document.body.scrollHeight : iframeObj.contentDocument.body.offsetHeight);
+                        }, 200)
                     }
                 }
             }
-        })
-    });
-
+        }
+    })
 
 </script>
 </body>
